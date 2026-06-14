@@ -217,7 +217,7 @@ curl -X POST http://localhost:3000/api/voice-assistant/analyze `
 NEXT_PUBLIC_API_URL=http://localhost:3000/api
 NEXT_PUBLIC_AI_ENGINE_URL=http://localhost:5000
 NODE_ENV=development
-NEXT_PUBLIC_GEMINI_API_KEY=AIzaSyBZS-1rurlFtL2NqgFjyounuh5aIe7nSZE
+NEXT_PUBLIC_GEMINI_API_KEY=Enter your api key
 ```
 
 ### Backend (`.env`)
@@ -229,11 +229,11 @@ DB_PORT=5432
 DB_NAME=healthbridge
 DB_USER=postgres
 DB_PASSWORD=kali
-JWT_SECRET=a8f5f167f44f4964e6c998dee827110c
+JWT_SECRET=your jet uri
 JWT_EXPIRES_IN=7d
 OPENAI_API_KEY=sk-proj-...
 OPENAI_MODEL=gpt-4o-mini
-GEMINI_API_KEY=AIzaSyBZS-1rurlFtL2NqgFjyounuh5aIe7nSZE
+GEMINI_API_KEY=Enter your api key
 ```
 
 ### AI Engine (No .env needed currently)
