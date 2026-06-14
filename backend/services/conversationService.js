@@ -1,5 +1,16 @@
 const { query } = require('../config/database');
 const logger = require('../utils/logger');
+const { randomUUID } = require('crypto');
+
+// In-memory fallback storage when DB is unavailable
+const memStore = {
+  conversations: new Map(),
+  messages: new Map()
+};
+
+function isDbError(err) {
+  return err.code === 'ECONNREFUSED' || err.code === 'ENOTFOUND' || err.code === '57P03';
+}
 
 /**
  * ConversationService - Manages conversation persistence and retrieval
@@ -13,24 +24,24 @@ class ConversationService {
    * @returns {Object} Created conversation
    */
   async createConversation(userId, metadata = {}) {
+    const { language = 'hi', title = null } = metadata;
     try {
-      const { language = 'hi', title = null } = metadata;
-
       const result = await query(
         `INSERT INTO conversations (user_id, language, title, metadata)
          VALUES ($1, $2, $3, $4)
          RETURNING *`,
         [userId, language, title, JSON.stringify(metadata)]
       );
-
       const conversation = result.rows[0];
       logger.info(`Conversation created: ${conversation.id} for user: ${userId}`);
-
-      return {
-        success: true,
-        conversation
-      };
+      return { success: true, conversation };
     } catch (error) {
+      if (isDbError(error)) {
+        logger.warn('DB unavailable, using in-memory conversation storage');
+        const conversation = { id: randomUUID(), user_id: userId, language, title, metadata, messages: [], created_at: new Date() };
+        memStore.conversations.set(conversation.id, conversation);
+        return { success: true, conversation };
+      }
       logger.error('Error creating conversation:', error);
       throw error;
     }
@@ -45,43 +56,29 @@ class ConversationService {
    * @returns {Object} Created message
    */
   async addMessage(conversationId, role, content, metadata = {}) {
+    const { contentType = 'text', voiceDuration = null } = metadata;
     try {
-      const { contentType = 'text', voiceDuration = null } = metadata;
-
-      // Insert message
       const messageResult = await query(
         `INSERT INTO conversation_messages 
          (conversation_id, role, content, content_type, voice_duration, metadata)
          VALUES ($1, $2, $3, $4, $5, $6)
          RETURNING *`,
-        [
-          conversationId,
-          role,
-          content,
-          contentType,
-          voiceDuration,
-          JSON.stringify(metadata)
-        ]
+        [conversationId, role, content, contentType, voiceDuration, JSON.stringify(metadata)]
       );
-
       const message = messageResult.rows[0];
-
-      // Update conversation metadata
       await this._updateConversationTimestamp(conversationId);
       await this._incrementMessageCount(conversationId);
-
-      // Auto-generate title from first user message if not set
-      if (role === 'user') {
-        await this._autoGenerateTitle(conversationId, content);
-      }
-
+      if (role === 'user') await this._autoGenerateTitle(conversationId, content);
       logger.info(`Message added: ${message.id} to conversation: ${conversationId}`);
-
-      return {
-        success: true,
-        message
-      };
+      return { success: true, message };
     } catch (error) {
+      if (isDbError(error)) {
+        const message = { id: randomUUID(), conversation_id: conversationId, role, content, content_type: contentType, metadata, created_at: new Date() };
+        const conv = memStore.conversations.get(conversationId);
+        if (conv) conv.messages.push(message);
+        memStore.messages.set(message.id, message);
+        return { success: true, message };
+      }
       logger.error('Error adding message:', error);
       throw error;
     }
@@ -162,27 +159,17 @@ class ConversationService {
    */
   async getConversation(conversationId, userId = null) {
     try {
-      // Get conversation
       let conversationQuery = `SELECT * FROM conversations WHERE id = $1`;
       const conversationParams = [conversationId];
-
       if (userId) {
         conversationQuery += ` AND user_id = $2`;
         conversationParams.push(userId);
       }
-
       const conversationResult = await query(conversationQuery, conversationParams);
-
       if (conversationResult.rows.length === 0) {
-        return {
-          success: false,
-          error: 'Conversation not found or access denied'
-        };
+        return { success: false, error: 'Conversation not found or access denied' };
       }
-
       const conversation = conversationResult.rows[0];
-
-      // Get all messages
       const messagesResult = await query(
         `SELECT cm.*, rd.severity_level, rd.recommended_facility, rd.reasoning
          FROM conversation_messages cm
@@ -191,16 +178,15 @@ class ConversationService {
          ORDER BY cm.created_at ASC`,
         [conversationId]
       );
-
       conversation.messages = messagesResult.rows;
-
       logger.info(`Retrieved conversation: ${conversationId} with ${messagesResult.rows.length} messages`);
-
-      return {
-        success: true,
-        conversation
-      };
+      return { success: true, conversation };
     } catch (error) {
+      if (isDbError(error)) {
+        const conv = memStore.conversations.get(conversationId);
+        if (!conv) return { success: true, conversation: { id: conversationId, messages: [] } };
+        return { success: true, conversation: conv };
+      }
       logger.error('Error getting conversation:', error);
       throw error;
     }
