@@ -122,25 +122,30 @@ router.post('/analyze', async (req, res) => {
     );
 
     // Save routing decision
-    const routingResult = await query(
-      `INSERT INTO routing_decisions 
-       (conversation_id, message_id, user_id, symptoms, severity_level, 
-        severity_score, recommended_facility, facility_id, reasoning, ai_confidence)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
-       RETURNING *`,
-      [
-        currentConversationId,
-        assistantMessageResult.message.id,
-        userId,
-        JSON.stringify(analysis.symptoms),
-        severityAssessment.level,
-        severityAssessment.score,
-        routingDecision.recommendedFacilityType,
-        routingDecision.facility?.id || null,
-        routingDecision.reasoning,
-        analysis.confidence || 0.85
-      ]
-    );
+    let routingResult = { rows: [{ id: null }] };
+    try {
+      routingResult = await query(
+        `INSERT INTO routing_decisions 
+         (conversation_id, message_id, user_id, symptoms, severity_level, 
+          severity_score, recommended_facility, facility_id, reasoning, ai_confidence)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+         RETURNING *`,
+        [
+          currentConversationId,
+          assistantMessageResult.message.id,
+          userId,
+          JSON.stringify(analysis.symptoms),
+          severityAssessment.level,
+          severityAssessment.score,
+          routingDecision.recommendedFacilityType,
+          routingDecision.facility?.id || null,
+          routingDecision.reasoning,
+          analysis.confidence || 0.85
+        ]
+      );
+    } catch (dbErr) {
+      logger.warn('DB unavailable, skipping routing_decisions save:', dbErr.code);
+    }
 
     // OPTIMIZED: Trigger worker notification asynchronously (don't wait)
     if (routingDecision.facility) {
@@ -269,12 +274,18 @@ router.post('/feedback', async (req, res) => {
     }
 
     // Save feedback to database
-    const result = await query(
-      `INSERT INTO message_feedback (message_id, user_id, rating, feedback, created_at)
-       VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
-       RETURNING *`,
-      [messageId, userId, rating, feedback]
-    );
+    let result;
+    try {
+      result = await query(
+        `INSERT INTO message_feedback (message_id, user_id, rating, feedback, created_at)
+         VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+         RETURNING *`,
+        [messageId, userId, rating, feedback]
+      );
+    } catch (dbErr) {
+      logger.warn('DB unavailable, feedback not persisted:', dbErr.code);
+      return res.json({ success: true, feedback: { message_id: messageId, rating, feedback } });
+    }
 
     logger.info(`Feedback submitted for message: ${messageId}`);
 
