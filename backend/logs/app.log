@@ -223,3 +223,10 @@
 {"timestamp":"2026-01-30T05:43:07.234Z","level":"INFO","message":"Message added: 33ede227-8760-417f-9a9d-6cbff576fb04 to conversation: aa72a065-c81b-4e86-aec4-2a91c5334722","pid":24928,"service":"healthbridge-backend"}
 {"timestamp":"2026-01-30T05:43:18.418Z","level":"INFO","message":"Message added: cc21c997-1afa-402c-9500-7968dbb42e51 to conversation: aa72a065-c81b-4e86-aec4-2a91c5334722","pid":24928,"service":"healthbridge-backend"}
 {"timestamp":"2026-01-30T05:43:18.429Z","level":"INFO","message":"Voice assistant analysis completed for user: 3dfd7ac0-8b57-46df-8232-9efe2750183c","pid":24928,"service":"healthbridge-backend"}
+{"timestamp":"2026-01-30T06:41:54.835Z","level":"INFO","message":"Conversation created: cb8d98ac-1f6c-4c90-8a5a-a26fbdafc3e2 for user: 3dfd7ac0-8b57-46df-8232-9efe2750183c","pid":24928,"service":"healthbridge-backend"}
+{"timestamp":"2026-01-30T06:41:54.881Z","level":"INFO","message":"Retrieved conversation: cb8d98ac-1f6c-4c90-8a5a-a26fbdafc3e2 with 0 messages","pid":24928,"service":"healthbridge-backend"}
+{"timestamp":"2026-01-30T06:41:54.936Z","level":"INFO","message":"Auto-generated title for conversation: cb8d98ac-1f6c-4c90-8a5a-a26fbdafc3e2","pid":24928,"service":"healthbridge-backend"}
+{"timestamp":"2026-01-30T06:41:54.938Z","level":"INFO","message":"Message added: 588615c2-c382-4b80-8954-e31281188718 to conversation: cb8d98ac-1f6c-4c90-8a5a-a26fbdafc3e2","pid":24928,"service":"healthbridge-backend"}
+{"timestamp":"2026-01-30T06:42:10.596Z","level":"INFO","message":"Message added: 38d10138-0a43-4e48-b855-cfd0cacedb25 to conversation: cb8d98ac-1f6c-4c90-8a5a-a26fbdafc3e2","pid":24928,"service":"healthbridge-backend"}
+{"timestamp":"2026-01-30T06:42:10.609Z","level":"INFO","message":"Voice assistant analysis completed for user: 3dfd7ac0-8b57-46df-8232-9efe2750183c","pid":24928,"service":"healthbridge-backend"}
+{"timestamp":"2026-04-12T16:25:54.536Z","level":"WARN","message":"DB unavailable, using in-memory conversation storage","pid":23652,"service":"healthbridge-backend"}
