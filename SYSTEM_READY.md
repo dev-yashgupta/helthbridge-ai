@@ -27,7 +27,7 @@ The HealthBridge AI system is now fully operational with Google Gemini AI integr
 
 ### Backend (.env)
 ```
-GEMINI_API_KEY=AIzaSyBZS-1rurlFtL2NqgFjyounuh5aIe7nSZE
+GEMINI_API_KEY=your_api_key_here
 GEMINI_MODEL=models/gemini-2.5-flash
 GEMINI_MAX_TOKENS=2048
 GEMINI_TEMPERATURE=0.7
