@@ -151,7 +151,6 @@ node verify-setup.js
 - **TensorFlow** - Machine learning models
 - **IndicBERT** - Multilingual NLP
 - **scikit-learn** - Classical ML algorithms
->>>>>>> 625c1d08b102cca30de9e870a07dc91a032ff838
 
 3. **API Integration**:
    - OTP authentication
@@ -323,5 +322,5 @@ Your HealthBridge AI platform is now ready for development and deployment. The c
 =======
 [Website](https://healthbridge.ai) • [Demo](DEMO.md) • [Docs](docs/) • [Community](https://discord.gg/healthbridge)
 
-</div>
+</div>     
 >>>>>>> 625c1d08b102cca30de9e870a07dc91a032ff838
